@@ -1,0 +1,249 @@
+;mode800
+*define
+
+caption "SEVEN-BRIDGE for ONScripter"
+
+rmenu "セーブ",save,"ロード",load,"リセット",reset
+savenumber 18
+transmode alpha
+globalon
+rubyon
+saveon
+nsa
+humanz 10
+windowback
+
+defsub tati
+defsub voice
+defsub flush
+defsub csp_all
+defsub name_img
+defsub bg_change
+defsub bgmfadeout_def
+
+numalias _tati,1
+numalias _name,2
+
+effect 9,10,1800
+effect 10,10,200
+;<<-EFFECT->>
+
+game
+;----------------------------------------
+*name_img
+	getparam $50
+	lsp _name,"grps\"+$50+".png",7,479
+	print 1
+return
+
+*bg_change
+	csp 20
+	dwavestop 0
+	bg $51,%52
+	csp 11
+	print 1
+	mov $51,"":mov %52,0
+return
+
+*bgmfadeout_def
+	getparam %53
+	dwavestop 1
+	bgmfadeout %53
+	bgmstop
+	bgmfadeout 0
+return
+
+*flush
+	getparam %54
+	lsp 1,"grpe\0888.png",0,0
+	print 1
+	wait %54
+	csp 1
+	print 1
+return
+
+*voice
+	getparam $55,%56
+	if %56==0 dwave 0,"voice_dec\"+$55
+	if %56==1 dwave 0,"1_dec\"+$55
+return
+
+*tati
+	getparam %57,%58,%59,%60
+	
+	;立ち絵か演出かの判定値 - 絶対20じゃないけど正解がわからないためこのまま
+	if %57< 20 mov $61,"grpo\"
+	if %57>=20 mov $61,"grpo_bu\"
+	itoa $62,%58
+	
+	lsp %57,$61+$62+".png",%59,%60
+	print 1
+	mov $61,""
+return
+
+*csp_all
+	for %62=11 to 50
+		csp %62
+	next
+	print 1
+return
+;----------------------------------------
+*start
+
+;;;原作の「。とか、を行頭に表示させない」が
+;;;再現できなかったので仕方なく横は原作+1
+setwindow 153,477,21+1,4,24,24,0,5,40,0,0,#999999,0,470,799,599
+
+bgmvol 50		;BGM音量
+voicevol 100	;ボイス音量
+defsevol 30		;効果音音量
+
+mpegplay "mov\0002.mpg",1
+;----------------------------------------
+*title
+	csp -1
+	bg "grpe\3001.png",10
+	bgm "bgm_dec\Track01.wav"
+
+	lsp 71,":a/3,0,3;grpo\9000_.png",516,105
+	lsp 72,":a/3,0,3;grpo\9010_.png",516,166
+	lsp 73,":a/3,0,3;grpo\9020_.png",516,227
+	lsp 74,":a/3,0,3;grpo\9030_.png",516,290
+	lsp 75,":a/3,0,3;grpo\9040_.png",516,352
+	lsp 76,":a/3,0,3;grpo\9050_.png",516,417
+	
+	print 1
+
+*title_loop
+	bclear
+	btrans
+
+	spbtn 71,1
+	spbtn 72,2
+	spbtn 73,3
+	spbtn 76,6
+
+	btnwait %6
+	print 1
+
+	if %6==1 gosub *start_set:goto *scenario_0
+	if %6==2 gosub *start_set:goto *scenario_1
+	if %6==3 gosub *start_set:bg #4f9eff,10:systemcall load:bg black,10:goto *title
+	if %6==6 gosub *start_set:end
+goto *title_loop
+
+;----------------------------------------
+*start_set
+	dwave 1,"wav_dec\0001.wav"
+	csp 71
+	csp 72
+	csp 73
+	csp 74
+	csp 75
+	csp 76
+	bg black,9
+	bgmfadeout_def 500
+return
+;----------------------------------------
+;;;シナリオ接続
+
+*scenario_0
+gosub *2001_gsc
+mpegplay "mov\0003.mpg",0
+
+*scenario_1
+gosub *2002_gsc
+gosub *2003_gsc
+gosub *2004_gsc
+gosub *2005_gsc
+gosub *2006_gsc
+gosub *2007_gsc
+gosub *2008_gsc
+gosub *2009_gsc
+gosub *2010_gsc
+gosub *2011_gsc
+gosub *2024_gsc
+gosub *2025_gsc
+gosub *2026_gsc
+gosub *2027_gsc
+gosub *2028_gsc
+gosub *2029_gsc
+gosub *2030_gsc
+gosub *2031_gsc
+gosub *2032_gsc
+gosub *2033_gsc
+gosub *2034_gsc
+gosub *2035_gsc
+gosub *2036_gsc
+gosub *2037_gsc
+gosub *2052_gsc
+gosub *2053_gsc
+gosub *2054_gsc
+gosub *2055_gsc
+gosub *2056_gsc
+gosub *2057_gsc
+gosub *2058_gsc
+gosub *2059_gsc
+gosub *2060_gsc
+gosub *2065_gsc
+gosub *2066_gsc
+gosub *2401_gsc
+gosub *2402_gsc
+gosub *2403_gsc
+gosub *2404_gsc
+gosub *2405_gsc
+gosub *2406_gsc
+gosub *2407_gsc
+gosub *2501_gsc
+gosub *2502_gsc
+gosub *2601_gsc
+gosub *2602_gsc
+gosub *2603_gsc
+gosub *2701_gsc
+gosub *2702_gsc
+gosub *2703_gsc
+gosub *2801_gsc
+mpegplay "mov\0004.mpg",0
+
+mov %334,1:goto *title
+
+;----------------------------------------
+*GAMEOVER01
+	bg "grpe\1140.png",10:wait 1000
+	bg "grpe\1150.png",10:wait 200
+	bgm "bgm_dec\Track02.wav"
+	select "コンティニューする　",*GO01A,"コンティニューしない",*GO01B
+	*GO01A
+		*bgmfadeout_def 500
+		return *2011_gsc
+	*GO01B
+		*bgmfadeout_def 500
+		return *start
+		
+;----------------------------------------
+*GAMEOVER02
+	bg "grpe\1141.png",10:wait 1000
+	bg "grpe\1151.png",10:wait 200
+	bgm "bgm_dec\Track02.wav"
+	select "コンティニューする　",*GO02A,"コンティニューしない",*GO02B
+	*GO02A
+		*bgmfadeout_def 500
+		return *2037_gsc
+	*GO02B
+		*bgmfadeout_def 500
+		return *start
+		
+;----------------------------------------
+*GAMEOVER03
+	bg "grpe\1142.png",10:wait 1000
+	bg "grpe\1152.png",10:wait 200
+	bgm "bgm_dec\Track02.wav"
+	select "コンティニューする　",*GO03A,"コンティニューしない",*GO03B
+	*GO03A
+		*bgmfadeout_def 500
+		return *2060_gsc
+	*GO03B
+		*bgmfadeout_def 500
+		return *start
+		
+;----------ここまでdefault.txt----------
