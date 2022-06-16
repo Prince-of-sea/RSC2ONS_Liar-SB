@@ -20,7 +20,7 @@
 
 ## 使い方
  1. 適当な作業フォルダを作成
- 2. [GARBro](https://drive.google.com/file/d/1gH9nNRxaz8GexN0B1hWyUc3o692bkWXX/view)で以下のxflを(同名のディレクトリを作成した上で)作業フォルダへ展開<br>
+ 2. [GARBro](https://drive.google.com/file/d/1gH9nNRxaz8GexN0B1hWyUc3o692bkWXX/view)で以下のxflを(同名のフォルダを作成した上で)作業フォルダへ展開<br>
     
      - wav.xfl
      - voice.xfl
@@ -36,11 +36,12 @@
      ![](image1.png)
  3. voice内に"1.xfl"というファイルがあるので同様に作業フォルダへ展開<br>
     (展開後は削除してOK)
- 4. [gscScriptCompAndDecompiler-cli](https://github.com/PC-CNT/gscScriptCompAndDecompiler-cli/releases/tag/pr12)をDLし作業フォルダへ移動<br>
- 5. 展開先のディレクトリで[このコンバータ](https://github.com/Prince-of-sea/RSC2ONS_Liar-SB/releases/latest)をDL/起動させ変換(最低でも数分程度はかかります)<br>
+ 4. ゲーム側の"mov"ファルダを作業フォルダへコピー
+ 5. [gscScriptCompAndDecompiler-cli](https://github.com/PC-CNT/gscScriptCompAndDecompiler-cli/releases/tag/pr12)をDLし作業フォルダへ移動<br>
+ 6. 展開先のディレクトリで[このコンバータ](https://github.com/Prince-of-sea/RSC2ONS_Liar-SB/releases/latest)をDL/起動させ変換(最低でも数分程度はかかります)<br>
     変換前の時点で以下のような構成になっていればOKです↓<br>
     ![](image2.png)<br>
- 6. ウィンドウが消え、0.txtができれば完成<br>
+ 7. ウィンドウが消え、0.txtができれば完成<br>
     exe等の不要データを削除し、変換済みファイルと共に利用ハードへ転送
 
 

@@ -21,9 +21,7 @@ defsub name_img
 defsub bg_change
 defsub bgmfadeout_def
 
-numalias _tati,1
-numalias _name,2
-
+effect 8,10,100
 effect 9,10,1800
 effect 10,10,200
 ;<<-EFFECT->>
@@ -32,7 +30,7 @@ game
 ;----------------------------------------
 *name_img
 	getparam $50
-	lsp _name,"grps\"+$50+".png",7,479
+	lsp 2,"grps\"+$50+".png",7,479
 	print 1
 return
 
@@ -97,22 +95,23 @@ setwindow 153,477,21+1,4,24,24,0,5,40,0,0,#999999,0,470,799,599
 bgmvol 50		;BGM音量
 voicevol 100	;ボイス音量
 defsevol 30		;効果音音量
+;mov %334,1		;クリア判定
 
 mpegplay "mov\0002.mpg",1
 ;----------------------------------------
 *title
 	csp -1
+	bg white,8
 	bg "grpe\3001.png",10
 	bgm "bgm_dec\Track01.wav"
 
-	lsp 71,":a/3,0,3;grpo\9000_.png",516,105
-	lsp 72,":a/3,0,3;grpo\9010_.png",516,166
-	lsp 73,":a/3,0,3;grpo\9020_.png",516,227
-	lsp 74,":a/3,0,3;grpo\9030_.png",516,290
-	lsp 75,":a/3,0,3;grpo\9040_.png",516,352
-	lsp 76,":a/3,0,3;grpo\9050_.png",516,417
-	
-	print 1
+	lsp 71,":a/3,0,3;grpo\9000_.png",516,105:print 8
+	lsp 72,":a/3,0,3;grpo\9010_.png",516,166:print 8
+	lsp 73,":a/3,0,3;grpo\9020_.png",516,227:print 8
+	lsp 74,":a/3,0,3;grpo\9030_.png",516,290:print 8
+	if %334==1 lsp 75,":a/3,0,3;grpo\9040_.png",516,352:print 8
+	lsp 76,":a/3,0,3;grpo\9050_.png",516,417:print 8
+
 
 *title_loop
 	bclear
@@ -121,6 +120,7 @@ mpegplay "mov\0002.mpg",1
 	spbtn 71,1
 	spbtn 72,2
 	spbtn 73,3
+	if %334==1 spbtn 75,5
 	spbtn 76,6
 
 	btnwait %6
@@ -129,6 +129,7 @@ mpegplay "mov\0002.mpg",1
 	if %6==1 gosub *start_set:goto *scenario_0
 	if %6==2 gosub *start_set:goto *scenario_1
 	if %6==3 gosub *start_set:bg #4f9eff,10:systemcall load:bg black,10:goto *title
+	if %6==5 gosub *start_set:bg black,10:gosub *mov:goto *title
 	if %6==6 gosub *start_set:end
 goto *title_loop
 
@@ -145,67 +146,74 @@ goto *title_loop
 	bgmfadeout_def 500
 return
 ;----------------------------------------
+*mov
+	mpegplay "mov\0003.mpg",1
+	click
+	mpegplay "mov\0004.mpg",1
+	click
+return
+;----------------------------------------
 ;;;シナリオ接続
 
 *scenario_0
-gosub *2001_gsc
-mpegplay "mov\0003.mpg",0
+	gosub *2001_gsc
+	mpegplay "mov\0003.mpg",0
 
 *scenario_1
-gosub *2002_gsc
-gosub *2003_gsc
-gosub *2004_gsc
-gosub *2005_gsc
-gosub *2006_gsc
-gosub *2007_gsc
-gosub *2008_gsc
-gosub *2009_gsc
-gosub *2010_gsc
-gosub *2011_gsc
-gosub *2024_gsc
-gosub *2025_gsc
-gosub *2026_gsc
-gosub *2027_gsc
-gosub *2028_gsc
-gosub *2029_gsc
-gosub *2030_gsc
-gosub *2031_gsc
-gosub *2032_gsc
-gosub *2033_gsc
-gosub *2034_gsc
-gosub *2035_gsc
-gosub *2036_gsc
-gosub *2037_gsc
-gosub *2052_gsc
-gosub *2053_gsc
-gosub *2054_gsc
-gosub *2055_gsc
-gosub *2056_gsc
-gosub *2057_gsc
-gosub *2058_gsc
-gosub *2059_gsc
-gosub *2060_gsc
-gosub *2065_gsc
-gosub *2066_gsc
-gosub *2401_gsc
-gosub *2402_gsc
-gosub *2403_gsc
-gosub *2404_gsc
-gosub *2405_gsc
-gosub *2406_gsc
-gosub *2407_gsc
-gosub *2501_gsc
-gosub *2502_gsc
-gosub *2601_gsc
-gosub *2602_gsc
-gosub *2603_gsc
-gosub *2701_gsc
-gosub *2702_gsc
-gosub *2703_gsc
-gosub *2801_gsc
-mpegplay "mov\0004.mpg",0
+	gosub *2002_gsc
+	gosub *2003_gsc
+	gosub *2004_gsc
+	gosub *2005_gsc
+	gosub *2006_gsc
+	gosub *2007_gsc
+	gosub *2008_gsc
+	gosub *2009_gsc
+	gosub *2010_gsc
+	gosub *2011_gsc
+	gosub *2024_gsc
+	gosub *2025_gsc
+	gosub *2026_gsc
+	gosub *2027_gsc
+	gosub *2028_gsc
+	gosub *2029_gsc
+	gosub *2030_gsc
+	gosub *2031_gsc
+	gosub *2032_gsc
+	gosub *2033_gsc
+	gosub *2034_gsc
+	gosub *2035_gsc
+	gosub *2036_gsc
+	gosub *2037_gsc
+	gosub *2052_gsc
+	gosub *2053_gsc
+	gosub *2054_gsc
+	gosub *2055_gsc
+	gosub *2056_gsc
+	gosub *2057_gsc
+	gosub *2058_gsc
+	gosub *2059_gsc
+	gosub *2060_gsc
+	gosub *2065_gsc
+	gosub *2066_gsc
+	gosub *2401_gsc
+	gosub *2402_gsc
+	gosub *2403_gsc
+	gosub *2404_gsc
+	gosub *2405_gsc
+	gosub *2406_gsc
+	gosub *2407_gsc
+	gosub *2501_gsc
+	gosub *2502_gsc
+	gosub *2601_gsc
+	gosub *2602_gsc
+	gosub *2603_gsc
+	gosub *2701_gsc
+	gosub *2702_gsc
+	gosub *2703_gsc
+	gosub *2801_gsc
+	mpegplay "mov\0004.mpg",0
 
-mov %334,1:goto *title
+	mov %334,1:goto *title
 
 ;----------------------------------------
 *GAMEOVER01

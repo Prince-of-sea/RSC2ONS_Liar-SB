@@ -1,4 +1,3 @@
-from unittest.mock import DEFAULT
 from PIL import Image
 import subprocess
 import soundfile
