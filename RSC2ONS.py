@@ -1,4 +1,5 @@
-from PIL import Image
+#!/usr/bin/env python3
+from PIL import Image, ImageEnhance
 import subprocess
 import soundfile
 import chardet
@@ -80,6 +81,15 @@ def image_cnv():
 			im.paste(im_p2, (im_p.width, 0))
 			im.paste(im_p2, (im_p.width*2, 0))
 
+			im.save(result)
+
+	for p in glob.glob(os.path.join(DIR_GRPS, '*.png')):
+		n = (os.path.splitext(os.path.basename(p))[0])
+		if str(n).lower() == 'confback':
+			result = (os.path.join(os.path.dirname(p), n + '_' + os.path.splitext(p)[1]))
+			im = Image.open(p)
+			enhancer = ImageEnhance.Brightness(im)
+			im = enhancer.enhance(0.2)
 			im.save(result)
 
 
