@@ -38,7 +38,7 @@
     (展開後は削除してOK)
  4. ゲーム側の"mov"ファルダを作業フォルダへコピー
  5. [gscScriptCompAndDecompiler-cli](https://github.com/PC-CNT/gscScriptCompAndDecompiler-cli/releases/tag/pr12)をDLし作業フォルダへ移動<br>
- 6. 展開先のディレクトリで[このコンバータ](https://github.com/Prince-of-sea/RSC2ONS_Liar-SB/releases/latest)をDL/起動させ変換(最低でも数分程度はかかります)<br>
+ 6. 展開先のディレクトリで[このコンバータ](https://github.com/Prince-of-sea/RSC2ONS_Liar-SB/releases/latest)をDL/起動させ変換<br>
     変換前の時点で以下のような構成になっていればOKです↓<br>
     ![](image2.png)<br>
  7. ウィンドウが消え、0.txtができれば完成<br>

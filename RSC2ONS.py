@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from PIL import Image, ImageEnhance
+import concurrent.futures
 import subprocess
 import soundfile
 import chardet
@@ -11,62 +12,48 @@ import re
 
 #[!]なにもかも解析途中です これをそのまま他作品に使い回さないでください
 
-same_hierarchy = (os.path.dirname(sys.argv[0]))#同一階層のパスを変数へ代入
-#same_hierarchy = os.path.join(same_hierarchy,'SBridge')#debug
 
-#grpo_exは不要
-DIR_1 = os.path.join(same_hierarchy,'1')
-DIR_BGM = os.path.join(same_hierarchy,'bgm')
-DIR_GRPE = os.path.join(same_hierarchy,'grpe')
-DIR_GRPO = os.path.join(same_hierarchy,'grpo')
-DIR_GRPO_BU = os.path.join(same_hierarchy,'grpo_bu')
-DIR_GRPS = os.path.join(same_hierarchy,'grps')
-DIR_SCR = os.path.join(same_hierarchy,'scr')
-DIR_VOICE = os.path.join(same_hierarchy,'voice')
-DIR_WAV = os.path.join(same_hierarchy,'wav')
+def effect_edit(t,f, el, es):
 
-DIR_SCR_DEC = os.path.join(same_hierarchy,'scr_dec')
-DEFAULT_TXT = os.path.join(same_hierarchy,'default.txt')
-EXE_GSC = os.path.join(same_hierarchy,'gscScriptCompAndDecompiler.exe')
-
-
-effect_startnum=10
-effect_list=[]
-
-sp_reverse = 50
-
-
-def effect_edit(t,f):
-	global effect_list
-
-	list_num=0
+	list_num = 0
 	if re.fullmatch(r'[0-9]+',t):#timeが数字のみ＝本処理
 
-		for i, e in enumerate(effect_list,effect_startnum+1):#1からだと番号が競合する可能性あり
+		for i, e in enumerate(el,es+1):#1からだと番号が競合する可能性あり
 			if (e[0] == t) and (e[1] == f):
 				list_num = i
 
 		if not list_num:
-			effect_list.append([t,f])
-			list_num = len(effect_list)+effect_startnum
+			el.append([t,f])
+			list_num = len(el)+es
 
-	return str(list_num)
-
-
-def music_cnv():
-	d1 = glob.glob(os.path.join(DIR_WAV, '*.*'))
-	d2 = glob.glob(os.path.join(DIR_BGM, '*.*'))
-	d3 = glob.glob(os.path.join(DIR_VOICE, '*.*'))
-	d4 = glob.glob(os.path.join(DIR_1, '*.*'))
-	for i in (d1+d2+d3+d4):
-		dd = (os.path.dirname(i) + '_dec')
-		dp = (os.path.join(dd, os.path.splitext(os.path.basename(i))[0] + '.wav'))
-		os.makedirs(dd, exist_ok=True)
-		soundfile.write(dp, soundfile.read(i)[0], soundfile.read(i)[1])
+	return str(list_num), el, es
 
 
-def image_cnv():
-	for p in glob.glob(os.path.join(DIR_GRPO, '*.png')):
+def music_cnv_main(i):
+	dd = (os.path.dirname(i) + '_dec')
+	dp = (os.path.join(dd, os.path.splitext(os.path.basename(i))[0] + '.wav'))
+	os.makedirs(dd, exist_ok=True)
+	soundfile.write(dp, soundfile.read(i)[0], soundfile.read(i)[1])
+	return
+
+
+def music_cnv(PATH_D):
+	d1 = glob.glob(os.path.join(PATH_D['DIR_WAV'], '*.*'))
+	d2 = glob.glob(os.path.join(PATH_D['DIR_BGM'], '*.*'))
+	d3 = glob.glob(os.path.join(PATH_D['DIR_VOICE'], '*.*'))
+	d4 = glob.glob(os.path.join(PATH_D['DIR_1'], '*.*'))
+
+	with concurrent.futures.ThreadPoolExecutor() as executor:#garbroで取り出した音源のヘッダが仕様怪しいのでsoundfile通してwavへ変換 - マルチスレッドで高速化
+		futures = []
+		for i in (d1 + d2 + d3 + d4):
+			futures.append(executor.submit(music_cnv_main, i))
+		
+		concurrent.futures.as_completed(futures)
+		
+
+
+def image_cnv(PATH_D):
+	for p in glob.glob(os.path.join(PATH_D['DIR_GRPO'], '*.png')):
 		n = (os.path.splitext(os.path.basename(p))[0])
 
 		if (int(n) >= 9000) and (int(n) < 9100):
@@ -83,7 +70,7 @@ def image_cnv():
 
 			im.save(result)
 
-	for p in glob.glob(os.path.join(DIR_GRPS, '*.png')):
+	for p in glob.glob(os.path.join(PATH_D['DIR_GRPS'], '*.png')):
 		n = (os.path.splitext(os.path.basename(p))[0])
 		if str(n).lower() == 'confback':
 			result = (os.path.join(os.path.dirname(p), n + '_' + os.path.splitext(p)[1]))
@@ -93,11 +80,15 @@ def image_cnv():
 			im.save(result)
 
 
-def text_cnv():
-	with open(DEFAULT_TXT) as f:
+def text_cnv(PATH_D):
+	with open(PATH_D['DEFAULT_TXT']) as f:
 		txt = f.read()
+	
+	sp_reverse = 50
+	effect_list = []
+	effect_startnum = 10
 
-	for p in glob.glob(os.path.join(DIR_SCR_DEC, '*.txt')):
+	for p in glob.glob(os.path.join(PATH_D['DIR_SCR_DEC'], '*.txt')):
 		line_mode = False
 		
 		with open(p, 'rb') as f:
@@ -189,7 +180,8 @@ def text_cnv():
 								line = 'mov $51,"grpe\\'+(BG_var[3]).zfill(4)+'.png"\n'
 
 							elif BG_var[2] == '502':
-								line = 'mov %52,'+effect_edit('500', BG_var[3])+':bg_change\n'
+								ee, effect_list, effect_startnum = effect_edit('500', BG_var[3], effect_list, effect_startnum)
+								line = 'mov %52,' + ee + ':bg_change\n'
 
 						elif line_mode == '62':#効果音だよ
 							SE_var = re.search(r'\[([0-9]+?)\]', line)
@@ -289,12 +281,12 @@ def text_cnv():
 
 	txt = txt.replace(r';<<-EFFECT->>', add0txt_effect)
 
-	open(os.path.join(same_hierarchy,'0.txt'), 'w', errors='ignore').write(txt)
+	open(PATH_D['ZERO_TXT'], 'w', errors='ignore').write(txt)
 	
 
-def file_check():
+def file_check(PATH_D):
 	c = True
-	for p in [DIR_1, DIR_BGM, DIR_GRPE, DIR_GRPO, DIR_GRPO_BU,DIR_GRPS, DIR_SCR, DIR_VOICE, DIR_WAV, DEFAULT_TXT, EXE_GSC]:
+	for p in [PATH_D['DIR_1'], PATH_D['DIR_BGM'], PATH_D['DIR_GRPE'], PATH_D['DIR_GRPO'], PATH_D['DIR_GRPO_BU'], PATH_D['DIR_GRPS'], PATH_D['DIR_SCR'], PATH_D['DIR_VOICE'], PATH_D['DIR_WAV'], PATH_D['DEFAULT_TXT'], PATH_D['EXE_GSC']]:
 		if not os.path.exists(p):
 			print(p+ ' is not found!')
 			c = False
@@ -302,27 +294,61 @@ def file_check():
 	return c
 
 
-def text_dec():
-	os.makedirs(DIR_SCR_DEC, exist_ok=True)
-
-	for p in glob.glob(os.path.join(DIR_SCR, '*.gsc')):
-		n = (os.path.splitext(os.path.basename(p))[0])
-		if int(n) >= 2000:
-			subprocess.run([EXE_GSC, '-m', 'decompile', '-i', p], shell=True, cwd=DIR_SCR)
-
-	for p in glob.glob(os.path.join(DIR_SCR, '*.txt')):
-		shutil.move(p, DIR_SCR_DEC)
+def text_dec_main(p, PATH_D):
+	n = (os.path.splitext(os.path.basename(p))[0])
+	if int(n) >= 2000:
+		subprocess.run([PATH_D['EXE_GSC'], '-m', 'decompile', '-i', p], shell=True, cwd=PATH_D['DIR_SCR'])
+	return
 
 
-def junk_del():
-	for d in [DIR_1, DIR_BGM, DIR_SCR, DIR_SCR_DEC, DIR_VOICE, DIR_WAV]:
+def text_dec(PATH_D):
+	os.makedirs(PATH_D['DIR_SCR_DEC'], exist_ok=True)
+
+	with concurrent.futures.ThreadPoolExecutor() as executor:#gscをtxtへデコード - マルチスレッドで高速化
+		futures = []
+		for p in glob.glob(os.path.join(PATH_D['DIR_SCR'], '*.gsc')):
+			futures.append(executor.submit(text_dec_main, p, PATH_D))
+		
+		concurrent.futures.as_completed(futures)	
+		
+	for p in glob.glob(os.path.join(PATH_D['DIR_SCR'], '*.txt')):
+		shutil.move(p, PATH_D['DIR_SCR_DEC'])
+
+
+def junk_del(PATH_D):
+	for d in [PATH_D['DIR_1'], PATH_D['DIR_BGM'], PATH_D['DIR_SCR'], PATH_D['DIR_SCR_DEC'], PATH_D['DIR_VOICE'], PATH_D['DIR_WAV']]:
 		shutil.rmtree(d)
 	
 
+def main():
+	same_hierarchy = (os.path.dirname(sys.argv[0]))#同一階層のパスを変数へ代入
+	#same_hierarchy = os.path.join(same_hierarchy,'SBridge')#debug
+
+	PATH_D = {
+		#grpo_exは不要
+		'DIR_1'      :os.path.join(same_hierarchy,'1'),
+		'DIR_BGM'    :os.path.join(same_hierarchy,'bgm'),
+		'DIR_GRPE'   :os.path.join(same_hierarchy,'grpe'),
+		'DIR_GRPO'   :os.path.join(same_hierarchy,'grpo'),
+		'DIR_GRPO_BU':os.path.join(same_hierarchy,'grpo_bu'),
+		'DIR_GRPS'   :os.path.join(same_hierarchy,'grps'),
+		'DIR_SCR'    :os.path.join(same_hierarchy,'scr'),
+		'DIR_VOICE'  :os.path.join(same_hierarchy,'voice'),
+		'DIR_WAV'    :os.path.join(same_hierarchy,'wav'),
+
+		'DIR_SCR_DEC':os.path.join(same_hierarchy,'scr_dec'),
+		'DEFAULT_TXT':os.path.join(same_hierarchy,'default.txt'),
+		'EXE_GSC'    :os.path.join(same_hierarchy,'gscScriptCompAndDecompiler.exe'),
+		'ZERO_TXT'   :os.path.join(same_hierarchy,'0.txt')
+	}
+
+	if file_check(PATH_D):
+		music_cnv(PATH_D)
+		image_cnv(PATH_D)
+		text_dec(PATH_D)
+		text_cnv(PATH_D)
+		junk_del(PATH_D)
+
+
 #-----本処理-----
-if file_check():
-	music_cnv()
-	image_cnv()
-	text_dec()
-	text_cnv()
-	junk_del()
+main()
